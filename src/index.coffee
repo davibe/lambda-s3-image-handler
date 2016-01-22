@@ -79,6 +79,7 @@ exports.handler = amazonLambdaHandler = (event, context) -> Q.genrun ->
       
       if key[key.length - 1] == '/'
         log "#{key} #{eventName}, skipping directories"
+        continue
   
       if rules.isNotAnOriginal(key)
         log "#{key} #{eventName}, skipping variant"
