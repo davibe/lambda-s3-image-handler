@@ -43,3 +43,19 @@ Amazon Lambda uses an old version of node that does not support advanced feature
     npm run build-lambda
     
 The file is ready for upload to AWS console. See `package.json` for more details
+
+
+### Using on AWS Lambda
+
+While the script can work with both original images and variants (scaled versions)
+in the same directory it's recommended that you use a subfolder for the originals
+
+i.e. `originals/`
+
+This way you can attach the lambda handler to that specific path and it will not 
+get triggered by events of generated variant files.
+
+If you don't do this the lambda handler will be launched also for the created/deleted
+variants. The current strategy is to do nothing in that case but you will still pay
+the time consumed by the handler checking wether the file it's an original or not
+(with a minimum of 100ms).

@@ -26,13 +26,13 @@ generateVariants = (key) ->
   ext = "jpg"
   result =
     large:
-      key: "thumbs/#{originalName}.#{ext}"
+      key: "{originalName}.#{ext}"
       width: 500
     medium:
-      key: "thumbs/#{originalName}._SL160_.#{ext}"
+      key: "#{originalName}._SL160_.#{ext}"
       width: "160"
     small:
-      key: "thumbs/#{originalName}._SL75_.#{ext}"
+      key: "#{originalName}._SL75_.#{ext}"
       width: "75"
   result
 
