@@ -34,7 +34,7 @@ generateVariants = (fileName) ->
   result
 
 
-module.exports = {generateVariants, isOriginal}
+module.exports = {generateVariants, isNotAnOriginal}
 
 
 if not module.parent
