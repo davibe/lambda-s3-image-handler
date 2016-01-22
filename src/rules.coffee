@@ -9,7 +9,7 @@ extSplit = (fileName) ->
   fileNameNoExt = fileName.join('.')
   [ext, fileNameNoExt]
 
-isOriginal = (fileName) ->
+isNotAnOriginal = (fileName) ->
   # Is the current file the original or one of the generated variants ?
   # This is used to skip files that should not be re-converted
   tokens = ["_SL75_.jpg", "_SL160_.jpg"]

@@ -78,12 +78,13 @@ exports.handler = amazonLambdaHandler = (event, context) -> Q.genrun ->
     for record in event.Records
       bucketName = record.s3.bucket.name;
       awsRegion = record.awsRegion
-      # TODO: is decoding needed ?
-      # fileName = decodeURIComponent(record.s3.object.key.replace(/\+/g, " "))
-      fileName = record.s3.object.key
-      if rules.isOriginal(fileName) then continue
-      
       eventName = record.eventName
+      fileName = record.s3.object.key
+      
+      if rules.isNotAnOriginal(fileName)
+        log "#{fileName} #{eventName}, skipping"
+        continue
+      
       if eventName.indexOf("ObjectCreated") != -1
         yield s3WorkflowPut(fileName, bucketName, awsRegion)
       if eventName.indexOf("ObjectRemoved") != -1
