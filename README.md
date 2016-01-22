@@ -38,6 +38,8 @@ Amazon Lambda uses an old version of node that does not support advanced feature
 
 ### Building `lambda.zip`
 
+    cd [this project]
+    npm install .
     npm run build-lambda
     
 The file is ready for upload to AWS console. See `package.json` for more details

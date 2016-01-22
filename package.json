@@ -1,5 +1,5 @@
 {
-  "name": "image-resize",
+  "name": "lambda-s3-image-handler",
   "version": "1.0.0",
   "description": "A node-based package that implements an Amazon Lambda handler for scaling images on s3",
   "main": "index.js",
