@@ -10,4 +10,4 @@ partial = (fn, partialargs...) ->
     args = partialargs.concat(args)
     fn(args...)
 
-module.exports = {Q, awsPromised}
+module.exports = {Q, awsPromised, partial}
