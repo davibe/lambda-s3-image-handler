@@ -1,3 +1,4 @@
+Q = require 'q'
 awsPromised = require('aws-promised')
 gm = require('gm').subClass({ imageMagick: true })
 
@@ -10,4 +11,4 @@ partial = (fn, partialargs...) ->
     args = partialargs.concat(args)
     fn(args...)
 
-module.exports = {Q, awsPromised, partial}
+module.exports = {Q, awsPromised, partial, gm}
