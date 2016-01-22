@@ -9,9 +9,12 @@ log = partial(console.log, "s3ImageHandler")
   
 s3WorkflowPut = (fileName, bucketName, region) -> Q.genrun ->
   logger = partial(log, 's3WorkflowPut', "#{region}", "#{bucketName}")
+  before = Date.now()
+  now = -> Date.now() - before
+
   s3 = new awsPromised.s3({ region })
   
-  logger "#{fileName} checking variants"
+  logger "#{fileName} checking variants [#{now()}]"
   
   # create a map of variants => filename, size
   variants = rules.generateVariants(fileName)
@@ -30,25 +33,29 @@ s3WorkflowPut = (fileName, bucketName, region) -> Q.genrun ->
       
     if exists then continue
     
-    logger "#{variant.fileName} missing, creating one"
+    logger "#{variant.fileName} missing, creating one [#{now()}]"
     
     if not buffer
       
       response = yield s3.getObjectPromised({ Bucket: bucketName, Key: fileName })
       buffer = response.Body
-    
+      logger "#{variant.fileName} got data [#{now()}]"
+  
     Body = yield imageBuffer.resize(buffer, fileName, variant.width)
     ACL = 'public-read'
     ContentType = 'image/jpeg'
     yield s3.putObjectPromised({ Bucket: bucketName, Key: variant.fileName, ACL, ContentType, Body })
-    logger "#{variant.fileName} created"
+    logger "#{variant.fileName} created [#{now()}]"
   
 
 s3WorkflowDelete = (fileName, bucketName, region) -> Q.genrun ->
   logger = partial(log, 's3WorkflowDelete', "#{region}", "#{bucketName}")
+  before = Date.now()
+  now = -> Date.now() - before
+  
   s3 = new awsPromised.s3({ region })
   
-  logger "#{fileName} checking variants"
+  logger "#{fileName} checking variants [#{now()}]"
 
   # create a map of variants => filename, size
   variants = rules.generateVariants(fileName)
