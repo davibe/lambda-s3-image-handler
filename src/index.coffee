@@ -73,7 +73,6 @@ s3WorkflowDelete = (fileName, bucketName, region) -> Q.genrun ->
 ### amazon lambda handler ###
 
 exports.handler = amazonLambdaHandler = (event, context) -> Q.genrun ->
-  yield console.log event
   try
     # Apparently, a single "event" may include many s3 events
     for record in event.Records
