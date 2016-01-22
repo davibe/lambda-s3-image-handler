@@ -1,6 +1,7 @@
 Q = require 'q'
 awsPromised = require('aws-promised')
 gm = require('gm').subClass({ imageMagick: true })
+path = require 'path'
 
 # This is stolen from `Q-extended` but we inline it here because
 # generator stuff needs to be transpiled
@@ -11,4 +12,4 @@ partial = (fn, partialargs...) ->
     args = partialargs.concat(args)
     fn(args...)
 
-module.exports = {Q, awsPromised, partial, gm}
+module.exports = {Q, awsPromised, partial, gm, path}

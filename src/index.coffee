@@ -1,4 +1,4 @@
-{Q, awsPromised, partial} = require './common'
+{Q, awsPromised, partial, path} = require './common'
 
 rules = require './rules'
 imageBuffer = require './image_buffer'
@@ -7,17 +7,16 @@ log = partial(console.log, "s3ImageHandler")
 
 ### s3 workflows ###
   
-s3WorkflowPut = (fileName, bucketName, region) -> Q.genrun ->
+s3WorkflowPut = (key, bucketName, region) -> Q.genrun ->
   logger = partial(log, 's3WorkflowPut', "#{region}", "#{bucketName}")
   before = Date.now()
   now = -> Date.now() - before
 
   s3 = new awsPromised.s3({ region })
   
-  logger "#{fileName} checking variants [#{now()}]"
+  logger "#{key} checking variants [#{now()}]"
   
-  # create a map of variants => filename, size
-  variants = rules.generateVariants(fileName)
+  variants = rules.generateVariants(key)
   
   buffer = false
   
@@ -26,55 +25,45 @@ s3WorkflowPut = (fileName, bucketName, region) -> Q.genrun ->
     if not variant.width then continue
     
     try
-      yield s3.headObjectPromised({ Bucket: bucketName, Key: variant.fileName })
+      yield s3.headObjectPromised({ Bucket: bucketName, Key: variant.key})
       exists = true
     catch e
       exists = false
       
     if exists then continue
     
-    logger "#{variant.fileName} missing, creating one [#{now()}]"
+    logger "#{variant.key} missing, creating one [#{now()}]"
     
     if not buffer
       
-      response = yield s3.getObjectPromised({ Bucket: bucketName, Key: fileName })
+      response = yield s3.getObjectPromised({ Bucket: bucketName, Key: key})
       buffer = response.Body
-      logger "#{variant.fileName} got data [#{now()}]"
+      logger "#{key} got data [#{now()}]"
   
-    Body = yield imageBuffer.resize(buffer, fileName, variant.width)
+    Body = yield imageBuffer.resize(buffer, variant.key, variant.width)
     ACL = 'public-read'
     ContentType = 'image/jpeg'
-    yield s3.putObjectPromised({ Bucket: bucketName, Key: variant.fileName, ACL, ContentType, Body })
-    logger "#{variant.fileName} created [#{now()}]"
+    yield s3.putObjectPromised({ Bucket: bucketName, Key: variant.key, ACL, ContentType, Body })
+    logger "#{variant.key} created [#{now()}]"
   
 
-s3WorkflowDelete = (fileName, bucketName, region) -> Q.genrun ->
+s3WorkflowDelete = (key, bucketName, region) -> Q.genrun ->
   logger = partial(log, 's3WorkflowDelete', "#{region}", "#{bucketName}")
   before = Date.now()
   now = -> Date.now() - before
   
   s3 = new awsPromised.s3({ region })
   
-  logger "#{fileName} checking variants [#{now()}]"
+  logger "#{key} checking variants [#{now()}]"
 
-  # create a map of variants => filename, size
-  variants = rules.generateVariants(fileName)
+  variants = rules.generateVariants(key)
   
   for variantName, variant of variants
-    
     if not variant.width then continue
-    
-    # TODO: instead of using a head request first we may just try to delete it
     try
-      yield s3.headObjectPromised({ Bucket: bucketName, Key: variant.fileName })
-      exists = true
+      response = yield s3.deleteObjectPromised({ Bucket: bucketName, Key: variant.key })
+      logger "#{variant.key} deleted [#{now()}]"
     catch e
-      exists = false
-      
-    if not exists then continue
-    
-    response = yield s3.deleteObjectPromised({ Bucket: bucketName, Key: variant.fileName })
-    logger "#{variant.fileName} deleted"
 
   
 ### amazon lambda handler ###
@@ -86,16 +75,19 @@ exports.handler = amazonLambdaHandler = (event, context) -> Q.genrun ->
       bucketName = record.s3.bucket.name;
       awsRegion = record.awsRegion
       eventName = record.eventName
-      fileName = record.s3.object.key
+      key = record.s3.object.key
       
-      if rules.isNotAnOriginal(fileName)
-        log "#{fileName} #{eventName}, skipping"
+      if key[key.length - 1] == '/'
+        log "#{key} #{eventName}, skipping directories"
+  
+      if rules.isNotAnOriginal(key)
+        log "#{key} #{eventName}, skipping variant"
         continue
       
       if eventName.indexOf("ObjectCreated") != -1
-        yield s3WorkflowPut(fileName, bucketName, awsRegion)
+        yield s3WorkflowPut(key, bucketName, awsRegion)
       if eventName.indexOf("ObjectRemoved") != -1
-        yield s3WorkflowDelete(fileName, bucketName, awsRegion)
+        yield s3WorkflowDelete(key, bucketName, awsRegion)
   
     context.succeed()
   catch e
