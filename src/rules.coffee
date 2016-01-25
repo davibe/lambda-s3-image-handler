@@ -26,7 +26,7 @@ generateVariants = (key) ->
   ext = "jpg"
   result =
     large:
-      key: "{originalName}.#{ext}"
+      key: "#{originalName}.#{ext}"
       width: 500
     medium:
       key: "#{originalName}._SL160_.#{ext}"
