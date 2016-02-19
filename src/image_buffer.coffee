@@ -1,7 +1,7 @@
 
 {Q, gm} = require './common'
 
-imageType = "jpg"
+imageType = "png"
 
 # Resizes to a `jpeg` buffer with given width, as promised
 
