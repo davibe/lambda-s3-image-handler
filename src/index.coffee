@@ -75,7 +75,7 @@ exports.handler = amazonLambdaHandler = (event, context) -> Q.genrun ->
       bucketName = record.s3.bucket.name;
       awsRegion = record.awsRegion
       eventName = record.eventName
-      key = record.s3.object.key
+      key = decodeURIComponent(record.s3.object.key.replace("+", " "))
       
       if key[key.length - 1] == '/'
         log "#{key} #{eventName}, skipping directories"
