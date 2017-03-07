@@ -43,7 +43,8 @@ s3WorkflowPut = (key, bucketName, region) -> Q.genrun ->
     Body = yield imageBuffer.resize(buffer, variant.key, variant.width)
     ACL = 'public-read'
     ContentType = 'image/jpeg'
-    yield s3.putObjectPromised({ Bucket: bucketName, Key: variant.key, ACL, ContentType, Body })
+    CacheControl = 'max-age=1'
+    yield s3.putObjectPromised({ Bucket: bucketName, Key: variant.key, ACL, ContentType, CacheControl, Body })
     logger "#{variant.key} created [#{now()}]"
   
 
